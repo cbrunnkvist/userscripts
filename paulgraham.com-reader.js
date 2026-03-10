@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paul Graham Reader - Founder Mode Edition
 // @namespace    http://tampermonkey.net/
-// @version      2026.21
+// @version      2026.22
 // @description  Doing things that don't scale: fixing PG's HTML tables one cell at a time
 // @author       Conny Brunnkvist <cbrunnkvist@gmail.com>
 // @license      MIT
@@ -95,6 +95,10 @@
         /* Standardized Paragraph Spacing */
         #pg-reader-content p {
             margin: 0 0 1.4em 0 !important;
+        }
+
+        #pg-reader-content table {
+            width: 582px !important;
         }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
