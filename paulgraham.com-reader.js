@@ -6,6 +6,7 @@
 // @author       Conny Brunnkvist <cbrunnkvist@gmail.com>
 // @license      MIT
 // @match        https://www.paulgraham.com/*.html
+// @match        https://paulgraham.com/*.html
 // @grant        GM_addStyle
 // ==/UserScript==
 
