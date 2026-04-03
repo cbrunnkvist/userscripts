@@ -4,6 +4,7 @@
 // @version      2026-04-03
 // @description  Turns "mi" and "MPH" into "km" and "km/h". Well, at least in the "accessibility" panel at the bottom of the canvas...
 // @author       Conny Brunnkvist <cbrunnkvist@gmail.com>
+// @license      MIT
 // @match        https://www.nasa.gov/missions/artemis-ii/arow/
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=nasa.gov
 // @grant        none
@@ -12,25 +13,18 @@
 (function () {
     'use strict';
 
-    const MI_TO_KM = 1.60934;
-
     /**
      * Format an integer with a narrow no-break space (U+202F) as the
      * thousands separator, per ISO 80000-1 / SI-BIPM recommendations.
-     * e.g. 111541 → "111 541"
+     * e.g. 111541 → "111 541"
      */
     function siFormat(n) {
         return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\u202F');
     }
 
-    /** Convert miles → km, SI-formatted. */
-    function miToKm(miStr) {
-        return siFormat(parseFloat(miStr) * MI_TO_KM);
-    }
-
-    /** Convert mph → km/h, SI-formatted. */
-    function mphToKmh(mphStr) {
-        return siFormat(parseFloat(mphStr) * MI_TO_KM);
+    function milesToKilometers(miStr) {
+        const MI_TO_KM_FACTOR = 1.60934;
+        return parseFloat(miStr) * MI_TO_KM_FACTOR;
     }
 
     /**
@@ -38,46 +32,34 @@
      *
      * Handles patterns like:
      *   "Distance to Earth: 69307 mi."
-     *   "Distance to the Moon: 182980 mi."
-     *   "Velocity: 5015 mph,"
-     *   "Velocity: 5015 mph."  (trailing punctuation varies)
-     *
-     * Replacements are done in a single .replace() pass with a combined
-     * regex so we never touch the same substring twice.
+     *   "Distance to the Moon: 182980 mi " (space or other word boundary)
+     *   "Velocity: 5015 mph,"  (trailing punctuation varies)
      */
     function convertToMetric(text) {
-        // Match integers or decimals followed by " mi" or " mph" (case-insensitive),
-        // optionally trailed by punctuation we want to preserve.
+        // this regexp is probably overkill because AFAICS we never need to match decimal points inside numbers
         return text.replace(
             /(\d[\d,]*(?:\.\d+)?)\s*(mi|mph)\b/gi,
-            function (match, number, unit, offset, string) {
-                // Strip any thousands-commas before converting
+            function (match, number, unit) {
                 const clean = number.replace(/,/g, '');
                 const lowerUnit = unit.toLowerCase();
-
-                if (lowerUnit === 'mi') {
-                    return miToKm(clean) + ' km';
-                } else if (lowerUnit === 'mph') {
-                    return mphToKmh(clean) + ' km/h';
-                }
-
-                // Fallback – should never hit, but be safe
-                return match;
+                const unitMapping = {
+                    'mi': 'km',
+                    'mph': 'km/h'
+                };
+                return siFormat(milesToKilometers(clean)) + ' ' + unitMapping[lowerUnit];
             }
         );
     }
 
     function processNode(panel) {
-        const originalText = panel.textContent;
-        if (!/\b(?:mi|mph)\b/i.test(originalText)) return;
-        const convertedText = convertToMetric(originalText);
-        if (convertedText !== originalText) panel.textContent = convertedText;
+        const original = panel.textContent;
+        if (!/\b(?:mi|mph)\b/i.test(original)) return;
+        const converted = convertToMetric(original);
+        if (converted !== original) panel.textContent = converted;
     }
 
     let isProcessing = false;
 
-    // It looks like the panel update at a rate of about four times per second,
-    // so we need to debounce a bit in order to avoid flickering the UI.
     function safeProcess(panel) {
         if (isProcessing) return;
         isProcessing = true;
