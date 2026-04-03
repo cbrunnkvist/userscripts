@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Metric display mode for NASA Artemis II "AROW"
 // @namespace    https://ninzin.net/
-// @version      2026-04-03
+// @version      2026.1
 // @description  Turns "mi" and "MPH" into "km" and "km/h". Well, at least in the "accessibility" panel at the bottom of the canvas...
 // @author       Conny Brunnkvist <cbrunnkvist@gmail.com>
 // @license      MIT
